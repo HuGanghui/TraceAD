@@ -1,0 +1,7 @@
+.vscode
+*.pyc
+*.log
+.idea/
+
+# Apple MAC OSX hidden file
+.DS_Store
