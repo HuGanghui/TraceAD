@@ -141,7 +141,7 @@ class GoldDataVisualization:
                     fig.add_trace(go.Scatter(x=fault_strtime_list,
                                              y=fault_time_mrt_list, name="fault time",
                                              mode='markers', marker={"symbol": "cross", "opacity": 0.5}))
-                save_dir_path = "./"
+                save_dir_path = "./visualization/"
                 fig_html = save_dir_path + self.data_path.split("/")[-3] + "_" + self.data_path.split("/")[-1] + "_" + str(i) + ".html"
                 pio.write_html(fig, file=fig_html)
                 i += 1

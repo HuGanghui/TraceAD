@@ -7,4 +7,4 @@
 .DS_Store
 
 # html
-src/golddata_detection_algorithm/*.html
+src/golddata_detection_algorithm/**/*.html
