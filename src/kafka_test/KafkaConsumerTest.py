@@ -32,7 +32,6 @@ def consumer_message1_():
         print("consumer_message1_ " + msg.value.decode("utf-8") + " " + str(msg))
 
 
-
 # 消费方式2, 指定消费分区
 def consumer_message2():
     consumer = KafkaConsumer(bootstrap_servers=servers,
@@ -54,6 +53,11 @@ def consumer_message3():
         consumer.commit()
 
 
-if __name__ == '__main__':
+def block_test():
+    # 进行阻塞测试，确实因为第一个consumer有for循环，因此第二个无法消费到数据
     consumer_message1_()
     consumer_message1()
+
+
+if __name__ == '__main__':
+    block_test()
