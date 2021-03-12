@@ -5,3 +5,6 @@
 
 # Apple MAC OSX hidden file
 .DS_Store
+
+# html
+src/golddata_detection_algorithm/*.html
