@@ -35,5 +35,5 @@ def retrieve_partition_offset():
 
 if __name__ == '__main__':
     retrieve_topics()
-    retrieve_partitions("kafka-topic")
-    retrieve_partition_offset()
+    # retrieve_partitions("kafka-topic")
+    # retrieve_partition_offset()

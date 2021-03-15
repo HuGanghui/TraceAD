@@ -12,4 +12,6 @@ import json
 data = {'content': json.dumps("test")}
 
 if __name__ == '__main__':
+    data = [["docker", "cpu"]]
+    json.dumps(data)
     print(data)
