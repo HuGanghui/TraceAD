@@ -17,35 +17,20 @@ class TraceSimpleDetection:
     """
     def __init__(self, baseline_path):
         self.ad_ele = dict()
-        self.timestampList = []
         self.timestamp2traces = dict()
-        # 先用trace-0226来做个测试, timestamp从 2021-02-26 00:00:00 到 2021-02-27 00:00:00
-        for ts in range(1614268800, 1614355500, 300):
-            self.timestampList.append(ts)
         with open(baseline_path, "rb") as f:
             self.id2baseline = pickle.load(f)
 
     def find_timestamp_key(self, anomaly_timestamp):
         """
-        二分查找获取第一个大于等于anomaly_timestamp的ts
+        由于时间戳可以被300整除，因此通过减去余数可以直接获得anomaly_timestamp的区间ts_key，
+        这里以300秒为一个区间
 
         :param anomaly_timestamp:
         :return: 最后一个小于anomaly_timestamp的ts，也就是其所属的区间
         """
-        left = 0
-        right = len(self.timestampList) - 1
-        result = -1
-        while left <= right:
-            mid = left + (right - left) // 2
-            if self.timestampList[mid] < anomaly_timestamp:
-                left = mid + 1
-            elif self.timestampList[mid] >= anomaly_timestamp:
-                if mid == 0 or self.timestampList[mid - 1] < anomaly_timestamp:
-                    result = self.timestampList[mid-1]
-                    break
-                else:
-                    right = mid - 1
-        return result
+        timestamp_key = anomaly_timestamp - anomaly_timestamp % 300
+        return timestamp_key
 
     def save_trace_a(self, trace_data):
         """
