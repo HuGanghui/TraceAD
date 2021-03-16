@@ -1,0 +1,42 @@
+1614290340
+2021--02--26 05:59:00
+detected:
+['gjjcore8', 'gjjcore9', 'gjjcore4', 'gjjcore2']
+real:
+gjjcore2
+=================================
+1614295140
+2021--02--26 07:19:00
+detected:
+['gjjcore8', 'gjjcore9', 'gjjcore4', 'gjjcore3']
+real:
+gjjha2 (根本不存在这个网元的trace，先不管)
+=================================
+1614307623
+2021--02--26 10:47:03
+detected:
+['gjjcore8', 'gjjcore4', 'gjjcore3', 'gjjcore2']
+real:
+gjjcore8
+=================================
+1614316140
+2021--02--26 13:09:00
+detected:
+['gjjcore8', 'gjjcore9', 'gjjcore3']
+real:
+gjjcore8
+=================================
+1614329460
+2021--02--26 16:51:00
+detected:
+['gjjcore9', 'gjjcore5']
+real:
+gjjcore8
+=================================
+1614353220
+2021--02--26 23:27:00
+detected:
+['gjjcore9', 'gjjcore7']
+real:
+gjjcore9
+=================================

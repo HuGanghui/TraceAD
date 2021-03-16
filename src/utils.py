@@ -8,6 +8,7 @@
 # ------------      -------    --------    -----------
 # 2021/3/12 5:59 PM   hgh      1.0         None
 import time
+import numpy as np
 
 
 def strtime2timestamp(data_path):
@@ -20,6 +21,51 @@ def strtime2timestamp(data_path):
             print(time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(timestamp)))
 
 
+def is_array(data):
+    """
+    判断数据是否是ndarray格式，如果不是则将数据转化为array类型
+    :param data:
+    :return: data numpy.array
+    """
+    if data is not np.ndarray:
+        data = np.asarray(data)
+    return data
+
+
+def get_data_deviation(data, mean, window_len):
+    """
+    计算数据的标准差
+    :param data: 数据
+    :param mean: 均值
+    :param window_len: 滑窗长度
+    :return: 标准差
+    """
+    data = is_array(data)
+    data_var = np.sum((data - mean) ** 2 / window_len)
+    data_deviation = np.sqrt(data_var)
+    return data_deviation
+
+
+def get_low_limit(sigma, mean, standard_deviation):
+    """
+    计算动态基线的下限，利用使用3Sigma原则
+    :param mean: float 均值
+    :param standard_deviation: float 标准差
+    :return:
+    """
+    return mean - sigma * standard_deviation
+
+
+def get_upper_limit(sigma, mean, standard_deviation):
+    """
+    计算动态基线的上限，利用使用3Sigma原则
+    :param mean: 均值
+    :param standard_deviation: 标准差
+    :return:
+    """
+    return mean + sigma * standard_deviation
+
+
 if __name__ == '__main__':
-    data_path = "../../data/system-a/system-a-0226-fault-time.txt"
+    data_path = "../data/system-a/system-a-0226-fault-time.txt"
     strtime2timestamp(data_path)

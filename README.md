@@ -26,3 +26,33 @@
 
 * [logging（python3.6官方文档）](https://docs.python.org/3.6/library/logging.html)
 
+----
+
+当前测试效果：
+
+system-a
+
+* 真实异常时间：
+  
+* [0226真实异常时间](./result/system-a/0226/system-a-0226-fault-time.txt)
+  
+* 黄金指标异常检测-使用方法：3-Sigma
+
+  检测结果：
+
+  * [golddata_3sigma_no_rr_sr](./result/system-a/0226/golddata_3sigma_no_rr_sr.txt)
+
+    不用rr和sr
+
+  * [golddata_3sigma_and_rr_sr](./result/system-a/0226/golddata_3sigma_and_rr_sr.txt)
+
+    用rr和sr
+
+* trace数据网元异常检测-使用方法：3-Sigma
+
+  * [trace-3sigma](result/system-a/0226/trace_3sigma.txt)
+
+* 黄金指标（不用rr、sr）和trace数据联合测试
+
+  * [gold_3sigma_no_rr_sr_trace_test](result/system-a/0226/gold_3sigma_no_rr_sr_trace_test.txt)
+

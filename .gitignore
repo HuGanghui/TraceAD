@@ -11,3 +11,9 @@ src/golddata_detection_algorithm/**/*.html
 
 # zip
 *.zip
+
+# data
+*.csv
+
+# visualization
+*.html
