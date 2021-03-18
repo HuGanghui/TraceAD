@@ -15,10 +15,13 @@ def strtime2timestamp(data_path):
     with open(data_path) as f:
         for line in f:
             line = line.strip()
-            print(line)
-            timestamp = int(time.mktime(time.strptime(line, '%Y/%m/%d %H:%M:%S')))
-            print(timestamp)
-            print(time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(timestamp)))
+            # print(line)
+            try:
+                timestamp = int(time.mktime(time.strptime(line, '%Y/%m/%d %H:%M:%S')))
+            except ValueError:
+                timestamp = int(time.mktime(time.strptime(line, '%Y/%m/%d %H:%M')))
+            print(timestamp, end=",")
+            # print(time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(timestamp)))
 
 
 def is_array(data):
@@ -66,6 +69,27 @@ def get_upper_limit(sigma, mean, standard_deviation):
     return mean + sigma * standard_deviation
 
 
+def find_timestamp_key(anomaly_timestamp):
+    """
+    由于时间戳可以被300整除，因此通过减去余数可以直接获得anomaly_timestamp的区间ts_key，
+    这里以300秒为一个区间
+
+    :param anomaly_timestamp:
+    :return: 最后一个小于anomaly_timestamp的ts，也就是其所属的区间
+    """
+    ts_len = len(str(anomaly_timestamp))
+    if ts_len == 10:
+        timestamp_key = anomaly_timestamp - anomaly_timestamp % 300
+    else:
+        anomaly_timestamp = int(anomaly_timestamp / pow(10, ts_len-10))
+        timestamp_key = anomaly_timestamp - anomaly_timestamp % 300
+    return timestamp_key
+
+
 if __name__ == '__main__':
-    data_path = "../data/system-a/system-a-0226-fault-time.txt"
-    strtime2timestamp(data_path)
+    # # system a
+    # data_path = "../data/system-a/system-a-0226-fault-time.txt"
+    # # system b
+    # data_path = "../data/system-b/system-b-0304-fault-time.txt"
+    # strtime2timestamp(data_path)
+    print(find_timestamp_key(1614787199628))
