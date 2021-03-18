@@ -30,17 +30,28 @@ class SimpleThreadHoldDetection:
             return None
 
     def rr_smaller_100(self):
-        return self.stream_kpi["rr"] < 100
+        result = self.stream_kpi["rr"] < 100
+        if result:
+            pass
+            strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(self.stream_kpi["timestamp"]))
+            print(self.stream_kpi["tc"] + " rr " + strtime)
+        return result
 
     def sr_smaller_100(self):
-        return self.stream_kpi["sr"] < 100
+        result = self.stream_kpi["sr"] < 100
+        if result:
+            pass
+            strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(self.stream_kpi["timestamp"]))
+            print(self.stream_kpi["tc"] + " sr " + strtime)
+        return result
 
     def mrt_detect(self):
         result = self.stream_kpi["mrt"] > self.id2baseline[self.stream_kpi["tc"]][1] \
                  or self.stream_kpi["mrt"] < self.id2baseline[self.stream_kpi["tc"]][0]
         if result:
             pass
-            # print(self.stream_kpi["tc"])
+            strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(self.stream_kpi["timestamp"]))
+            print(self.stream_kpi["tc"] + " mrt " + strtime)
         return result
 
 
@@ -67,7 +78,7 @@ def gold_test(test_data_path, baseline_path, system):
                 if result is not None:
                     strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(result))
                     if strtime != prev_time:
-                        print(strtime)
+                        # print(strtime)
                         count += 1
                     prev_time = strtime
             else:
@@ -76,6 +87,12 @@ def gold_test(test_data_path, baseline_path, system):
 
 
 if __name__ == '__main__':
-    gold_test("../../data/system-a/kpi/kpi_0226.csv",
-         "./system-a_kpi_0301.csv_golddata_baseline.txt",
-         "a")
+    system = "b"
+    if system == "a":
+        gold_test("../../data/system-a/kpi/kpi_0226.csv",
+                  "./system-a_kpi_0301.csv_golddata_baseline.txt",
+                  system)
+    else:
+        gold_test("../../data/system-b/kpi/kpi_0304.csv",
+                  "./system-b_kpi_0129.csv_golddata_baseline.txt",
+                  system)
