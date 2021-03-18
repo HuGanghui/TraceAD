@@ -22,9 +22,9 @@ class SimpleThreadHoldDetection:
 
     def detect(self, stream_kpi):
         self.stream_kpi = stream_kpi
-        # if self.rr_smaller_100() or self.sr_smaller_100() \
-        #         or self.mrt_detect():
-        if self.mrt_detect():
+        if self.rr_smaller_100() or self.sr_smaller_100() \
+                or self.mrt_detect():
+        # if self.mrt_detect():
             return self.stream_kpi["timestamp"]
         else:
             return None

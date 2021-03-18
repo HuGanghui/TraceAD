@@ -64,8 +64,8 @@ class TraceDataPreProcessing:
             self.id2baseline[id] = [get_low_limit(self.sigma, self.id2mean[id][0], deviation),
                                     get_upper_limit(self.sigma, self.id2mean[id][0], deviation)]
             print(id + str(self.id2baseline[id]))
-        self.id2baseline["gjjcore8"] = [-33.17473538445567, 71.36819537983898]
-        print("gjjcore8" + str(self.id2baseline["gjjcore8"]))
+        # self.id2baseline["gjjcore8"] = [-33.17473538445567, 71.36819537983898]
+        # print("gjjcore8" + str(self.id2baseline["gjjcore8"]))
         self.dumps()
 
     def dumps(self):
@@ -87,7 +87,7 @@ class TraceDataPreProcessing:
 
 
 if __name__ == '__main__':
-    data_path = "../../data/system-a/trace/trace-0227.csv"
+    data_path = "../../data/system-a/trace/trace-0301.csv"
     test = TraceDataPreProcessing(data_path, 3)
     # test.vals_visiualization()
     test.get_id_upper_and_lower()

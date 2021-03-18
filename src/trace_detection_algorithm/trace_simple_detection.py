@@ -9,42 +9,35 @@
 # 2021/3/16 11:53 AM   hgh      1.0         None
 import pickle
 import time
+from utils import find_timestamp_key
 
 
 class TraceSimpleDetection:
     """
     根据对应网元的duration超过3-Sigma来判断网元是否异常
     """
-    def __init__(self, baseline_path):
+    def __init__(self, baseline_path, ts2traces):
         self.ad_ele = dict()
-        self.timestamp2traces = dict()
-        with open(baseline_path, "rb") as f:
-            self.id2baseline = pickle.load(f)
+        # TODO 考虑到线程安全问题，因此容器需要保证线程安全
+        self.timestamp2traces = ts2traces
+        if baseline_path is not None:
+            with open(baseline_path, "rb") as f:
+                self.id2baseline = pickle.load(f)
 
-    def find_timestamp_key(self, anomaly_timestamp):
-        """
-        由于时间戳可以被300整除，因此通过减去余数可以直接获得anomaly_timestamp的区间ts_key，
-        这里以300秒为一个区间
-
-        :param anomaly_timestamp:
-        :return: 最后一个小于anomaly_timestamp的ts，也就是其所属的区间
-        """
-        timestamp_key = anomaly_timestamp - anomaly_timestamp % 300
-        return timestamp_key
-
+    # for test
     def save_trace_a(self, trace_data):
         """
         针对a系统的traces都是只有一条，因此直接保存该网元以及对应的duration，后续用来判断是否异常
         :param trace_data: 单条trace数据
         :return:
         """
-        ts = self.find_timestamp_key(trace_data["timestamp"])
+        ts = find_timestamp_key(trace_data["timestamp"])
         if ts not in self.timestamp2traces:
             self.timestamp2traces[ts] = []
         self.timestamp2traces[ts].append((trace_data["cmdb_id"], trace_data["duration"]))
 
     def detect(self, ad_timestamp):
-        ts = self.find_timestamp_key(ad_timestamp)
+        ts = find_timestamp_key(ad_timestamp)
         # 目前只考虑当前区间
         prev_ts = ts - 300
         curr_ts = ts
@@ -76,13 +69,13 @@ class TraceSimpleDetection:
                 self.ad_ele[ele_id] = degree
 
 
-def trace_test(test_data_path, baseline_path, system):
+def trace_test_a(test_data_path, baseline_path, id2traces):
     print("start get trace data")
-    trace_simple_model = TraceSimpleDetection(baseline_path)
+    trace_simple_model = TraceSimpleDetection(baseline_path, id2traces)
     with open(test_data_path, "r") as f:
-        i = 0
+        header = True
         for line in f:
-            if i > 0:
+            if not header:
                 lines = line.split(",")
                 msg = dict()
                 msg["cmdb_id"] = lines[1]
@@ -90,15 +83,14 @@ def trace_test(test_data_path, baseline_path, system):
                 msg["duration"] = float(lines[5])
                 trace_simple_model.save_trace_a(msg)
             else:
-                i += 1
+                header = False
     return trace_simple_model
 
 
 if __name__ == '__main__':
-    system = "a"
     trace_test_data_path = "../../data/system-a/trace/trace-0226.csv"
     trace_baseline_path = "./system-a_trace-0227.csv_trace_baseline.txt"
-    trace_model = trace_test(trace_test_data_path, trace_baseline_path, system)
+    trace_model = trace_test_a(trace_test_data_path, trace_baseline_path, dict())
     ad_ts_list = [1614290340, 1614295140, 1614307623, 1614316140, 1614329460, 1614353220]
     real_label_list = ["gjjcore2", "gjjha2 (根本不存在这个网元的trace，先不管)", "gjjcore8", "gjjcore8", "gjjcore8", "gjjcore9"]
     i = 0
