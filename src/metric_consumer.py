@@ -16,18 +16,19 @@ from kafka import KafkaConsumer
 from config import servers
 from utils import find_timestamp_key
 
-logging.basicConfig(level=logging.INFO)
-metric_consumer_logger = logging.getLogger("metric_consumer")
-metric_consumer_handler = logging.FileHandler("metric_consumer_" + "a" + ".log")
-metric_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-metric_consumer_logger.addHandler(metric_consumer_handler)
-
 
 class MetricConsumerThread(threading.Thread):
     def __init__(self, name, ne2ts2metrics, system):
         threading.Thread.__init__(self)
         self.name = name
         self.system = system
+
+        logging.basicConfig(level=logging.INFO)
+        self.metric_consumer_logger = logging.getLogger("metric_consumer_" + system)
+        metric_consumer_handler = logging.FileHandler("metric_consumer_" + system + ".log")
+        metric_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+        self.metric_consumer_logger.addHandler(metric_consumer_handler)
+
         # TODO 考虑到线程安全问题，因此容器需要保证线程安全
         self.ne2ts2metrics = ne2ts2metrics
         self.kpi_consumer = KafkaConsumer(system + '-metric',
@@ -37,24 +38,21 @@ class MetricConsumerThread(threading.Thread):
                                           security_protocol='PLAINTEXT')
 
     def run(self):
-        metric_consumer_logger.info("开始线程：" + self.name)
+        self.metric_consumer_logger.info("开始线程：" + self.name)
         self.consume()
-        metric_consumer_logger.info("退出线程：" + self.name)
+        self.metric_consumer_logger.info("退出线程：" + self.name)
 
     def consume(self):
         i = 0
         for message in self.kpi_consumer:
             metric_data = json.loads(message.value.decode('utf8'))
             # print(metric_data)
-            if self.system == "a":
-                self.save_metric_a(metric_data)
-            else:
-                self.save_metric_b(metric_data)
+            self.save_metric(metric_data)
             i += 1
             if i % 10000 == 0:
-                metric_consumer_logger.info(metric_data)
+                self.metric_consumer_logger.info(metric_data)
 
-    def save_metric_a(self, metric_data):
+    def save_metric(self, metric_data):
         ne = metric_data["cmdb_id"]
         ts = find_timestamp_key(metric_data["timestamp"])
         old_ts = ts - 300 * 3
@@ -71,9 +69,6 @@ class MetricConsumerThread(threading.Thread):
             del self.ne2ts2metrics[ne][old_ts]
         self.ne2ts2metrics[ne][ts][kpi_name].append(value)
 
-    def save_metric_b(self, metric_data):
-        pass
-
 
 if __name__ == '__main__':
     ne2ts2metrics = dict()
@@ -83,3 +78,4 @@ if __name__ == '__main__':
     thread1.start()
     thread1.join()
     print("退出主线程")
+

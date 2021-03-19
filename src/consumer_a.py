@@ -18,7 +18,7 @@ from copy import copy
 import requests
 
 from metric_detection_algorithm.detection.metric_simple_detection import MetricSimpleDetection
-from kpi_consumer import KPIConsumerThread, kpi_consumer_logger
+from kpi_consumer import KPIConsumerThread
 from metric_consumer import MetricConsumerThread
 from trace_consumer import TraceConsumerThread
 from trace_detection_algorithm.trace_simple_detection import TraceSimpleDetection
@@ -94,10 +94,8 @@ def start_detect(q, ts2traces, ne2ts2metrics):
         try:
             ad_ts = q.get()
             consumer_logger.info("ad ts: " + str(ad_ts))
-            kpi_consumer_logger.info("ad ts: " + str(ad_ts))
             strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(ad_ts))
             consumer_logger.info(strtime)
-            kpi_consumer_logger.info(strtime)
             trace_result = trace_model.detect(ad_ts)
             if len(trace_result) == 0:
                 consumer_logger.info("in " + str(ad_ts) + " no trace error")
@@ -138,5 +136,6 @@ if __name__ == '__main__':
     # elif sys.argv[1] == "consume":
     #     # start to consume kafka
     #     main()
+    # TODO 后续需要完成测试
     main_a()
     consumer_logger.info("退出主线程")

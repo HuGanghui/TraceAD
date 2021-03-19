@@ -20,16 +20,16 @@ from config import servers
 from golddata_detection_algorithm import SimpleThreadHoldDetection
 
 
-logging.basicConfig(level=logging.INFO)
-kpi_consumer_logger = logging.getLogger("kpi_consumer")
-kpi_consumer_handler = logging.FileHandler("kpi_consumer_" + "a" + ".log")
-kpi_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-kpi_consumer_logger.addHandler(kpi_consumer_handler)
-
-
 class KPIConsumerThread(threading.Thread):
     def __init__(self, name, baseline_path, q, system):
         threading.Thread.__init__(self)
+
+        logging.basicConfig(level=logging.INFO)
+        self.kpi_consumer_logger = logging.getLogger("kpi_consumer_" + system)
+        kpi_consumer_handler = logging.FileHandler("kpi_consumer_" + system + ".log")
+        kpi_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+        self.kpi_consumer_logger.addHandler(kpi_consumer_handler)
+
         self.name = name
         self.q = q
         self.gold_ad_model = SimpleThreadHoldDetection(baseline_path)
@@ -41,9 +41,9 @@ class KPIConsumerThread(threading.Thread):
                                           security_protocol='PLAINTEXT')
 
     def run(self):
-        kpi_consumer_logger.info("开始线程：" + self.name)
+        self.kpi_consumer_logger.info("开始线程：" + self.name)
         self.consume()
-        kpi_consumer_logger.info("退出线程：" + self.name)
+        self.kpi_consumer_logger.info("退出线程：" + self.name)
 
     def consume(self):
         prev_ts = None
@@ -57,13 +57,13 @@ class KPIConsumerThread(threading.Thread):
                 if prev_ts is None or ad_ts > (prev_ts + 180):
                     prev_ts = ad_ts
                     self.q.put(ad_ts)
-                    kpi_consumer_logger.info("put: " + str(ad_ts))
+                    self.kpi_consumer_logger.info("put: " + str(ad_ts))
                     strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(ad_ts))
-                    kpi_consumer_logger.info(strtime)
+                    self.kpi_consumer_logger.info(strtime)
                 else:
-                    kpi_consumer_logger.info("ad but no put: " + str(ad_ts))
+                    self.kpi_consumer_logger.info("ad but no put: " + str(ad_ts))
                     strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(ad_ts))
-                    kpi_consumer_logger.info(strtime)
+                    self.kpi_consumer_logger.info(strtime)
 
 
 def get_q_ele(q):

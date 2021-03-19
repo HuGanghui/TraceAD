@@ -17,18 +17,19 @@ from kafka import KafkaConsumer
 from config import servers
 from utils import find_timestamp_key
 
-logging.basicConfig(level=logging.INFO)
-trace_consumer_logger = logging.getLogger("trace_consumer")
-trace_consumer_handler = logging.FileHandler("trace_consumer_" + "a" + ".log")
-trace_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
-trace_consumer_logger.addHandler(trace_consumer_handler)
-
 
 class TraceConsumerThread(threading.Thread):
     def __init__(self, name, ts2traces, system):
         threading.Thread.__init__(self)
         self.name = name
         self.system = system
+
+        logging.basicConfig(level=logging.INFO)
+        self.trace_consumer_logger = logging.getLogger("trace_consumer_" + system)
+        trace_consumer_handler = logging.FileHandler("trace_consumer_" + system + ".log")
+        trace_consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+        self.trace_consumer_logger.addHandler(trace_consumer_handler)
+
         # TODO 考虑到线程安全问题，因此容器需要保证线程安全
         self.timestamp2traces = ts2traces
         self.kpi_consumer = KafkaConsumer(system + '-trace',
@@ -38,9 +39,9 @@ class TraceConsumerThread(threading.Thread):
                                           security_protocol='PLAINTEXT')
 
     def run(self):
-        trace_consumer_logger.info("开始线程：" + self.name)
+        self.trace_consumer_logger.info("开始线程：" + self.name)
         self.consume()
-        trace_consumer_logger.info("退出线程：" + self.name)
+        self.trace_consumer_logger.info("退出线程：" + self.name)
 
     def consume(self):
         i = 0
@@ -52,7 +53,7 @@ class TraceConsumerThread(threading.Thread):
                 self.save_trace_b(trace_data)
             i += 1
             if i % 10000 == 0:
-                trace_consumer_logger.info(message)
+                self.trace_consumer_logger.info(message)
 
     def save_trace_a(self, trace_data):
         """
@@ -71,10 +72,14 @@ class TraceConsumerThread(threading.Thread):
 
     def save_trace_b(self, trace_data):
         ts = find_timestamp_key(trace_data["timestamp"])
+        old_ts = ts - 300 * 3
         if ts not in self.timestamp2traces:
             self.timestamp2traces[ts] = dict()
         if trace_data["trace_id"] not in self.timestamp2traces[ts]:
             self.timestamp2traces[ts][trace_data["trace_id"]] = []
+        # 删除过期数据
+        if old_ts in self.timestamp2traces:
+            del self.timestamp2traces[old_ts]
         # TODO 是不是无需字典
         self.timestamp2traces[ts][trace_data["trace_id"]].append({"cmdb_id": trace_data["cmdb_id"],
                                                                   "parent_id": trace_data["parent_id"],
