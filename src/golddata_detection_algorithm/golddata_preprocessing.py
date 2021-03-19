@@ -47,7 +47,8 @@ class GOLDDataPreProcessing:
         for id in self.id2mean.keys():
             self.id2baseline[id] = [get_low_limit(self.sigma, self.id2mean[id], self.id2std[id]),
                                     get_upper_limit(self.sigma, self.id2mean[id], self.id2std[id])]
-            # print(id + str(self.id2baseline[id]))
+            print(id + str(self.id2baseline[id]))
+        self.dumps()
 
     def dumps(self):
         baseline_path = "./" + self.data_path.split("/")[-3] + "_" \
@@ -64,18 +65,9 @@ if __name__ == '__main__':
         test = GOLDDataPreProcessing(data_path, sigma=3)
         test.get_data_from_file()
         test.get_id_upper_and_lower()
-        test.dumps()
-        with open("./system-a_kpi_0301.csv_golddata_baseline.txt", "rb") as f:
-            a = pickle.load(f)
-        print(a)
     else:
         # system-b
         data_path = "../../data/system-b/kpi/kpi_0130.csv"
         test = GOLDDataPreProcessing(data_path, sigma=3)
         test.get_data_from_file()
         test.get_id_upper_and_lower()
-        test.dumps()
-        with open("./system-b_kpi_0130.csv_golddata_baseline.txt", "rb") as f:
-            a = pickle.load(f)
-        print(a)
-

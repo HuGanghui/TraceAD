@@ -112,7 +112,7 @@ class GoldDataVisualization:
                                              mode='markers', marker={"symbol": "cross", "opacity": 0.5}),
                                   row=i, col=1)
                 i = i + 1
-            save_dir_path = "./"
+            save_dir_path = "./visualization/"
             fig_html = save_dir_path + self.data_path.split("/")[-3] + "_" + self.data_path.split("/")[-1] + ".html"
             pio.write_html(fig, file=fig_html)
         else:
@@ -154,8 +154,8 @@ if __name__ == '__main__':
     # test = GoldDataVisualization(data_path, fault_time_path)
 
     # system-b
-    data_path = "../../data/system-b/kpi/kpi_0304.csv"
-    fault_time_path = "../../data/system-b/system-b-0304-fault-time.txt"
-    test = GoldDataVisualization(data_path, fault_time_path)
+    data_path = "../../data/system-b/kpi/kpi_0311.csv"
+    # fault_time_path = "../../data/system-b/system-b-0304-fault-time.txt"
+    test = GoldDataVisualization(data_path)
     test.get_data_from_file()
     test.simple_display(subplot=False)
