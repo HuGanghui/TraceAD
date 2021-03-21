@@ -87,9 +87,14 @@ def find_timestamp_key(anomaly_timestamp):
 
 
 if __name__ == '__main__':
-    # # system a
-    # data_path = "../data/system-a/system-a-0226-fault-time.txt"
-    # # system b
-    # data_path = "../data/system-b/system-b-0304-fault-time.txt"
-    # strtime2timestamp(data_path)
-    print(find_timestamp_key(1614787199628))
+    system = "b"
+    if system == "a":
+        # system a
+        data_path = "../data/system-a/system-a-0226-fault-time.txt"
+        strtime2timestamp(data_path)
+    else:
+        # system b
+        data_path = "../data/system-b/system-b-0304-fault-time.txt"
+        strtime2timestamp(data_path)
+
+    # print(find_timestamp_key(1614787199628))
