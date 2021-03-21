@@ -51,23 +51,32 @@ class GOLDDataPreProcessing:
         self.dumps()
 
     def dumps(self):
-        baseline_path = "./" + self.data_path.split("/")[-3] + "_" \
-                        + self.data_path.split("/")[-1] + "_golddata_baseline.txt"
+        baseline_path_suffix = "./" + self.data_path.split("/")[-3] + "_" \
+                        + self.data_path.split("/")[-1]
+        baseline_path = baseline_path_suffix + "_golddata_baseline.txt"
         with open(baseline_path, "wb") as f:
             pickle.dump(self.id2baseline, f, 1)
 
+        self._log(baseline_path_suffix)
+
+    def _log(self, baseline_path_suffix):
+        baseline_path = baseline_path_suffix + "_trace_baseline_log.txt"
+        with open(baseline_path, "w") as f:
+            for id_ in self.id2baseline:
+                f.write(id_ + ": " + str(self.id2baseline[id_]) + "\n")
+
 
 if __name__ == '__main__':
-    system = "b"
+    system = "a"
     if system == "a":
         # system-a
-        data_path = "../../data/system-a/kpi/kpi_0301.csv"
+        data_path = "../../data/system-a/kpi/kpi_0227.csv"
         test = GOLDDataPreProcessing(data_path, sigma=3)
         test.get_data_from_file()
         test.get_id_upper_and_lower()
     else:
         # system-b
-        data_path = "../../data/system-b/kpi/kpi_0130.csv"
+        data_path = "../../data/system-b/kpi/kpi_0311.csv"
         test = GOLDDataPreProcessing(data_path, sigma=3)
         test.get_data_from_file()
         test.get_id_upper_and_lower()

@@ -85,15 +85,15 @@ class GoldDataVisualization:
             i = 1
             for ele in self.DataFrameList:
                 fig.add_trace(go.Scatter(x=ele["ts"],
-                                         y=ele["mrt"], name="tc 响应时间: " + str(i)),
+                                         y=ele["mrt"], name=str(ele["tc"][0]) + "tc 响应时间: " + str(i)),
                               row=i, col=1)
                 sr_smaller_100, rr_smaller_100 = self.rr_or_sr_smaller_100(ele)
                 fig.add_trace(go.Scatter(x=sr_smaller_100["ts"],
-                                         y=sr_smaller_100["mrt"], name="tc sr < 100 : " + str(i),
+                                         y=sr_smaller_100["mrt"], name=str(ele["tc"][0]) + "tc sr < 100 : " + str(i),
                                          mode='markers', marker={"symbol": "circle", "opacity": 0.5}),
                               row=i, col=1)
                 fig.add_trace(go.Scatter(x=rr_smaller_100["ts"],
-                                         y=rr_smaller_100["mrt"], name="tc rr < 100 : " + str(i),
+                                         y=rr_smaller_100["mrt"], name=str(ele["tc"][0]) + "tc rr < 100 : " + str(i),
                                          mode='markers', marker={"symbol": "x", "opacity": 0.5}),
                               row=i, col=1)
 
@@ -108,7 +108,7 @@ class GoldDataVisualization:
                         except ValueError:
                             fault_strtime_list.append(time.strftime("%Y--%m--%d %H:%M", time.localtime(timestamp)))
                     fig.add_trace(go.Scatter(x=fault_strtime_list,
-                                             y=fault_time_mrt_list, name="fault time : " + str(i),
+                                             y=fault_time_mrt_list, name=str(ele["tc"][0]) + "fault time : " + str(i),
                                              mode='markers', marker={"symbol": "cross", "opacity": 0.5}),
                                   row=i, col=1)
                 i = i + 1
@@ -120,13 +120,13 @@ class GoldDataVisualization:
             for ele in self.DataFrameList:
                 fig = go.Figure()
                 fig.add_trace(go.Scatter(x=ele["ts"],
-                                         y=ele["mrt"], name="tc 响应时间"))
+                                         y=ele["mrt"], name=str(ele["tc"][0]) + "tc 响应时间"))
                 sr_smaller_100, rr_smaller_100 = self.rr_or_sr_smaller_100(ele)
                 fig.add_trace(go.Scatter(x=sr_smaller_100["ts"],
-                                         y=sr_smaller_100["mrt"], name="tc sr < 100 : ",
+                                         y=sr_smaller_100["mrt"], name=str(ele["tc"][0]) + "tc sr < 100 : ",
                                          mode='markers', marker={"symbol": "circle", "opacity": 0.5}))
                 fig.add_trace(go.Scatter(x=rr_smaller_100["ts"],
-                                         y=rr_smaller_100["mrt"], name="tc rr < 100 : ",
+                                         y=rr_smaller_100["mrt"], name=str(ele["tc"][0]) + "tc rr < 100 : ",
                                          mode='markers', marker={"symbol": "x", "opacity": 0.5}))
                 if self.fault_label_path is not None:
                     fault_time_list = self.get_fault_time_list()
@@ -139,10 +139,11 @@ class GoldDataVisualization:
                         except ValueError:
                             fault_strtime_list.append(time.strftime("%Y--%m--%d %H:%M", time.localtime(timestamp)))
                     fig.add_trace(go.Scatter(x=fault_strtime_list,
-                                             y=fault_time_mrt_list, name="fault time",
+                                             y=fault_time_mrt_list, name=str(ele["tc"][0]) + "fault time",
                                              mode='markers', marker={"symbol": "cross", "opacity": 0.5}))
                 save_dir_path = "./visualization/"
-                fig_html = save_dir_path + self.data_path.split("/")[-3] + "_" + self.data_path.split("/")[-1] + "_" + str(i) + ".html"
+                fig_html = save_dir_path + self.data_path.split("/")[-3] + "_" + self.data_path.split("/")[-1] + "_" \
+                           + str(ele["tc"][0]) + ".html"
                 pio.write_html(fig, file=fig_html)
                 i += 1
 

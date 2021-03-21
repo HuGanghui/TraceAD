@@ -44,12 +44,13 @@ class SimpleThreadHoldDetection:
         return result
 
 
-def gold_test(test_data_path, baseline_path, system):
+def gold_test(test_data_path, baseline_path, label_ts_list, system, avoid_over_alert=180):
     i = 0
     simplemodel = SimpleThreadHoldDetection(baseline_path)
     with open(test_data_path, "r") as f:
         count = 0
-        prev_time = None
+        detect_count = 0
+        prev_ts = None
         for line in f:
             if i > 0:
                 lines = line.split(",")
@@ -65,17 +66,32 @@ def gold_test(test_data_path, baseline_path, system):
                 msg["tc"] = lines[5].strip()
                 result = simplemodel.detect(msg)
                 if result is not None:
-                    strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(result))
-                    if strtime != prev_time:
-                        print(strtime)
+                    if prev_ts is None or result > (prev_ts + avoid_over_alert):
+                        strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(result))
+                        for lable_ts in label_ts_list:
+                            if 0 <= result - lable_ts <= 600:
+                                print(strtime)
+                                detect_count += 1
+                                break
                         count += 1
-                    prev_time = strtime
+                        prev_ts = result
             else:
                 i += 1
+        print(detect_count)
         print(count)
 
 
 if __name__ == '__main__':
-    gold_test("../../data/system-a/kpi/kpi_0226.csv",
-         "./system-a_kpi_0301.csv_golddata_baseline.txt",
-         "a")
+    system = "a"
+    if system == "a":
+        label_ts_list = [1614287762, 1614290280, 1614295140, 1614307623, 1614316140, 1614329460, 1614353220]
+        gold_test("../../data/system-a/kpi/kpi_0226.csv",
+                  "./system-a_kpi_0301.csv_golddata_baseline.txt",
+                  label_ts_list,
+                  "a")
+    else:
+        label_ts_list = [1614797100, 1614798240, 1614815220, 1614818340, 1614823500, 1614856920, 1614858540]
+        gold_test("../../data/system-b/kpi/kpi_0304.csv",
+                  "./system-b_kpi_0129.csv_golddata_baseline.txt",
+                  label_ts_list,
+                  "b", 180)
