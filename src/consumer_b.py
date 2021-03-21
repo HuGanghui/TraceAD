@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 # -*- coding:utf-8 -*-
 
-# @File    :   consumer.py    
+# @File    :   consumer_b.py    
 # @Contact :   19120364@bjtu.edu.com
 
 # @Modify Time      @Author    @Version    @Description
 # ------------      -------    --------    -----------
-# 2021/3/13 1:27 PM   hgh      1.0         None
+# 2021/3/18 4:55 PM   hgh      1.0         None
 import _thread
 import json
 import logging
@@ -18,17 +18,17 @@ from copy import copy
 import requests
 
 from log_consumer import LogConsumerThread
+from log_detection_algorithm.real_time_log_anomaly_detection_demo import ai_ops_log_anomaly_detection
 from metric_detection_algorithm.detection.test_rank import MetricSimpleDetection
 from kpi_consumer import KPIConsumerThread
 from metric_consumer import MetricConsumerThread
-from log_detection_algorithm.real_time_log_anomaly_detection_demo import ai_ops_log_anomaly_detection
 from trace_consumer import TraceConsumerThread
-from trace_detection_algorithm.trace_simple_detection import TraceSimpleDetection
+from trace_detection_algorithm.trace_simple_detection_b import TraceSimpleDetectionB
 from utils import find_timestamp_key
 
 logging.basicConfig(level=logging.INFO)
-consumer_logger = logging.getLogger("consumer_a")
-consumer_handler = logging.FileHandler("consumer_" + "a" + ".log")
+consumer_logger = logging.getLogger("consumer_b")
+consumer_handler = logging.FileHandler("consumer_" + "b" + ".log")
 consumer_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
 consumer_logger.addHandler(consumer_handler)
 
@@ -36,33 +36,33 @@ consumer_logger.addHandler(consumer_handler)
 def submit(ctx):
     assert (isinstance(ctx, list))
     for tp in ctx:
-        assert (isinstance(tp, list))
-        assert (len(tp) == 2)
-        assert (isinstance(tp[0], str))
-        assert (isinstance(tp[1], str) or (tp[1] is None))
+        assert(isinstance(tp, list))
+        assert(len(tp) == 2)
+        assert(isinstance(tp[0], str))
+        assert(isinstance(tp[1], str) or (tp[1] is None))
     data = {'content': json.dumps(ctx)}
-    r = requests.post('http://10.3.2.25:5000/standings/submit/', data=json.dumps(data))
+    r = requests.post('http://10.3.2.25:5001/standings/submit/', data=json.dumps(data))
     return r.text
 
 
-def main_a():
-    system = "a"
+def main_b():
+    system = "b"
     # 黄金指标
     gold_data_ad_q = queue.Queue()
     cur_path = os.path.abspath(os.path.dirname(__file__))
-    gold_data_system_a_baseline_path = cur_path \
-                                       + "/golddata_detection_algorithm/system-a_kpi_0301.csv_golddata_baseline.txt"
-    kpi_thread = KPIConsumerThread("Thread-kpi-consumer", gold_data_system_a_baseline_path, gold_data_ad_q, system)
+    gold_data_system_b_baseline_path = cur_path \
+                                       + "/golddata_detection_algorithm/system-b_kpi_0130.csv_golddata_baseline.txt"
+    kpi_thread = KPIConsumerThread("Thread-kpi-consumer", gold_data_system_b_baseline_path, gold_data_ad_q, system)
     # 开启新线程
     kpi_thread.start()
 
-    # Trace数据
+    # # Trace数据
     ts2traces = dict()
     trace_thread = TraceConsumerThread("Thread-trace-consumer", ts2traces, system)
     # 开启新线程
     trace_thread.start()
-
-    # Metric数据
+    #
+    # # Metric数据
     ne2ts2metrics = dict()
     metric_thread = MetricConsumerThread("Thread-metric-consumer", ne2ts2metrics, system)
     # 开启新线程
@@ -71,6 +71,7 @@ def main_a():
     # log数据
     ne2ts2logs = dict()
     log_thread = LogConsumerThread("Thread-log-consumer", ne2ts2logs, system)
+    # 开启新线程
     log_thread.start()
 
     # 检测线程
@@ -84,9 +85,10 @@ def main_a():
 
 def start_detect(q, ts2traces, ne2ts2metrics, ne2ts2logs):
     cur_path = os.path.abspath(os.path.dirname(__file__))
-    trace_baseline_path = cur_path + "/trace_detection_algorithm/system-a_trace-0227.csv_trace_baseline.txt"
-    trace_model = TraceSimpleDetection(trace_baseline_path, ts2traces)
-    metric_model = MetricSimpleDetection("a")
+    trace_baseline_path = cur_path + "/trace_detection_algorithm/system-b_trace_0311.csv_22266996_trace_baseline.txt"
+    trace_model = TraceSimpleDetectionB(trace_baseline_path, ts2traces)
+    # TODO 暂时先用，后续可能会用更合适的模型
+    metric_model = MetricSimpleDetection("b")
     consumer_logger.info('start get q')
     while True:
         try:
@@ -94,7 +96,7 @@ def start_detect(q, ts2traces, ne2ts2metrics, ne2ts2logs):
             consumer_logger.info("ad ts: " + str(ad_ts))
             strtime = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(ad_ts))
             consumer_logger.info(strtime)
-            trace_result = trace_model.detect(ad_ts)
+            trace_result = trace_model.detect_b(ad_ts)
             if len(trace_result) == 0:
                 consumer_logger.info("in " + str(ad_ts) + " no trace error")
             else:
@@ -129,6 +131,7 @@ def get_metric_detect_result(ne_ad, ts_key, metric_model, ne2ts2metrics, answer,
         for ele in list(ne2ts2metrics[ne_ad][ts_key].keys()):
             metric_datas.append(copy(ne2ts2metrics[ne_ad][ts_key][ele]))
             kpi_names.append(ele)
+        # TODO metric detect 有bug，空的输进去也是异常
         metric_results = metric_model.metric_test(metric_datas, ne_ad, kpi_names)
         if len(metric_results) == 0:
             con_logger.info("in " + str(ts_key) + " and trace_ad: " + str(ne_ad) + " no metric ad")
@@ -138,18 +141,6 @@ def get_metric_detect_result(ne_ad, ts_key, metric_model, ne2ts2metrics, answer,
             answer.append([ne_ad, ele])
     else:
         con_logger.info("ne_ad or ts_key not in ne2ts2metrics")
-
-
-def get_metric_detect_result_test():
-    ne_ad = "gjjcore2"
-    ts_key = find_timestamp_key(1614290340)
-    metric_model = MetricSimpleDetection("a")
-    ne2ts2metrics = dict()
-    ne2ts2metrics["gjjcore2"] = dict()
-    ne2ts2metrics["gjjcore2"][ts_key] = dict()
-    ne2ts2metrics["gjjcore2"][ts_key]["test"] = []
-    answer = []
-    get_metric_detect_result(ne_ad, ts_key, metric_model, ne2ts2metrics, answer, consumer_logger)
 
 
 def get_log_detect_result(ne_ad, ts_key, ne2ts2logs, answer, con_logger):
@@ -171,6 +162,18 @@ def get_log_detect_result(ne_ad, ts_key, ne2ts2logs, answer, con_logger):
         con_logger.info("ne_ad or ts_key not in ne2ts2logs")
 
 
+def get_metric_detect_result_test():
+    ne_ad = "gjjcore2"
+    ts_key = find_timestamp_key(1614290340)
+    metric_model = MetricSimpleDetection("a")
+    ne2ts2metrics = dict()
+    ne2ts2metrics["gjjcore2"] = dict()
+    ne2ts2metrics["gjjcore2"][ts_key] = dict()
+    ne2ts2metrics["gjjcore2"][ts_key]["test"] = []
+    answer = []
+    get_metric_detect_result(ne_ad, ts_key, metric_model, ne2ts2metrics, answer, consumer_logger)
+
+
 def get_log_detect_result_test():
     ne_ad = "gjjcore2"
     ts_key = find_timestamp_key(1614290340)
@@ -183,17 +186,10 @@ def get_log_detect_result_test():
 
 
 if __name__ == '__main__':
-    # if sys.argv[1] == "submit":
-    #     # test part
-    #     while True:
-    #         r = submit([["docker_003", "container_cpu_used"]])
-    #         time.sleep(60)
-    # elif sys.argv[1] == "consume":
-    #     # start to consume kafka
-    #     main()
     # TODO 后续需要完成测试
-    main_a()
-    consumer_logger.info("退出主线程")
     # test
     # get_metric_detect_result_test()
     # get_log_detect_result_test()
+    main_b()
+    consumer_logger.info("退出主线程")
+
