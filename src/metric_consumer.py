@@ -31,11 +31,11 @@ class MetricConsumerThread(threading.Thread):
 
         # TODO 考虑到线程安全问题，因此容器需要保证线程安全
         self.ne2ts2metrics = ne2ts2metrics
-        self.kpi_consumer = KafkaConsumer(system + '-metric',
-                                          bootstrap_servers=servers,
-                                          auto_offset_reset='latest',
-                                          enable_auto_commit=False,
-                                          security_protocol='PLAINTEXT')
+        self.metric_consumer = KafkaConsumer(system + '-metric',
+                                             bootstrap_servers=servers,
+                                             auto_offset_reset='latest',
+                                             enable_auto_commit=False,
+                                             security_protocol='PLAINTEXT')
 
     def run(self):
         self.metric_consumer_logger.info("开始线程：" + self.name)
@@ -44,13 +44,13 @@ class MetricConsumerThread(threading.Thread):
 
     def consume(self):
         i = 0
-        for message in self.kpi_consumer:
+        for message in self.metric_consumer:
             metric_data = json.loads(message.value.decode('utf8'))
             # print(metric_data)
-            self.save_metric(metric_data)
-            i += 1
             if i % 10000 == 0:
                 self.metric_consumer_logger.info(metric_data)
+            self.save_metric(metric_data)
+            i += 1
 
     def save_metric(self, metric_data):
         ne = metric_data["cmdb_id"]
@@ -73,7 +73,7 @@ class MetricConsumerThread(threading.Thread):
 if __name__ == '__main__':
     ne2ts2metrics = dict()
     system = "a"
-    thread1 = MetricConsumerThread("Thread-trace-consumer", ne2ts2metrics, system)
+    thread1 = MetricConsumerThread("Thread-metric-consumer", ne2ts2metrics, system)
     # 开启新线程
     thread1.start()
     thread1.join()

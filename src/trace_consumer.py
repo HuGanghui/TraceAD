@@ -32,7 +32,7 @@ class TraceConsumerThread(threading.Thread):
 
         # TODO 考虑到线程安全问题，因此容器需要保证线程安全
         self.timestamp2traces = ts2traces
-        self.kpi_consumer = KafkaConsumer(system + '-trace',
+        self.trace_consumer = KafkaConsumer(system + '-trace',
                                           bootstrap_servers=servers,
                                           auto_offset_reset='latest',
                                           enable_auto_commit=False,
@@ -45,15 +45,15 @@ class TraceConsumerThread(threading.Thread):
 
     def consume(self):
         i = 0
-        for message in self.kpi_consumer:
+        for message in self.trace_consumer:
             trace_data = json.loads(message.value.decode('utf8'))
+            if i % 10000 == 0:
+                self.trace_consumer_logger.info(message)
             if self.system == "a":
                 self.save_trace_a(trace_data)
             else:
                 self.save_trace_b(trace_data)
             i += 1
-            if i % 10000 == 0:
-                self.trace_consumer_logger.info(message)
 
     def save_trace_a(self, trace_data):
         """

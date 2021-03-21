@@ -57,7 +57,7 @@ class LogConsumerThread(threading.Thread):
     def save_logs_a(self, log_data):
         ne = log_data["cmdb_id"]
         ts = find_timestamp_key(log_data["timestamp"])
-        old_ts = ts - 60
+        old_ts = ts - 300
         try:
             log_name = log_data["logname"]
         except KeyError:
@@ -83,7 +83,7 @@ class LogConsumerThread(threading.Thread):
         if log_name == "gc":
             ne = log_data["cmdb_id"]
             ts = find_timestamp_key(log_data["timestamp"])
-            old_ts = ts - 60
+            old_ts = ts - 300
             logs = log_data["log_id"] + "," + str(ts) + "," + ne + "," + log_name + "," + log_data["value"]
             if ne not in self.ne2ts2logs:
                 self.ne2ts2logs[ne] = dict()
