@@ -94,6 +94,9 @@ class TraceDataPreProcessingB:
         baseline_path_suffix = "./" + self.data_path.split("/")[-3] + "_" \
                         + self.data_path.split("/")[-1] + "_" + str(index)
         baseline_path = baseline_path_suffix + "_trace_baseline.txt"
+        for id in list(self.id2baseline_result.keys()):
+            if str(id).startswith("docker"):
+                del self.id2baseline_result[id]
         with open(baseline_path, "wb") as f:
             pickle.dump(self.id2baseline_result, f, 1)
 

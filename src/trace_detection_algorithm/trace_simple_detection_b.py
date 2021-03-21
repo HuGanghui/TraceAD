@@ -46,8 +46,8 @@ class TraceSimpleDetectionB:
     def detect_b(self, ad_timestamp):
         ts = find_timestamp_key(ad_timestamp)
         curr_ts = ts
-        if curr_ts in self.timestamp2traces.keys():
-            for ele in self.timestamp2traces[curr_ts].keys():
+        if curr_ts in list(self.timestamp2traces.keys()):
+            for ele in list(self.timestamp2traces[curr_ts].keys()):
                 parent_id2index = dict()
                 trace_datas = self.timestamp2traces[curr_ts][ele]
                 for i in range(0, len(trace_datas)):
@@ -56,10 +56,11 @@ class TraceSimpleDetectionB:
                 self.create_tree(ele, trace_datas, parent_id2index)
         self.duration_detect_b()
         # TODO 不不仅仅考虑异常程度，还考虑异常数量
-        result_ = sorted(self.ad_ele.items(), key=lambda kv: (kv[1], kv[0]), reverse=True)
+        result_ = sorted(self.ad_ele.items(), key=lambda kv: (kv[1][0], kv[0]), reverse=True)
         self.ad_ele.clear()
         result = []
         for ele in result_[:4]:
+            # print(str(ele[0]) + ": " + str(ele[1]))
             result.append(ele[0])
         return result
 
@@ -74,9 +75,13 @@ class TraceSimpleDetectionB:
         if node.cmdb_id in self.id2baseline:
             result = node.duration > self.id2baseline[node.cmdb_id][1]
         if result:
-            degree = abs(result - self.id2baseline[node.cmdb_id][1]) / self.id2baseline[node.cmdb_id][1]
-            if node.span_id not in self.ad_ele or degree > self.ad_ele[node.cmdb_id]:
-                self.ad_ele[node.cmdb_id] = degree
+            # print(str(node.cmdb_id) + ": " + str(node.duration))
+            degree = abs(node.duration - self.id2baseline[node.cmdb_id][1]) / self.id2baseline[node.cmdb_id][1]
+            if node.cmdb_id not in self.ad_ele:
+                self.ad_ele[node.cmdb_id] = [degree, 0]
+            elif degree > self.ad_ele[node.cmdb_id][0]:
+                self.ad_ele[node.cmdb_id][0] = degree
+            self.ad_ele[node.cmdb_id][1] = self.ad_ele[node.cmdb_id][1] + 1
 
         if len(node.childs) != 0:
             for child in node.childs:
@@ -161,11 +166,13 @@ def trace_test_b(test_data_path, baseline_path, id2trace):
 
 if __name__ == '__main__':
     trace_test_data_path = "../../data/system-b/trace/trace_0304.csv"
-    # trace_baseline_path = "./system-b_trace_0304.csv_12000000_trace_baseline.txt"
+    # trace_baseline_path = "./system-b_trace_0311.csv_22266996_trace_baseline.txt"
     trace_baseline_path = "./system-b_trace_0129.csv_60000000_trace_baseline.txt"
     trace_model = trace_test_b(trace_test_data_path, trace_baseline_path, dict())
     ad_ts_list = [1614797100, 1614798240, 1614815220, 1614818340, 1614823500, 1614858540, 1614856920]
-    real_label_list = ["Mysql02", "Tomcat02", "Tomcat01", "MG02", "Mysql01", "Tomcat02", "Tomcat03"]
+    # ad_ts_list = [1614797100]
+    real_label_list = ["Mysql02-内存使用过高", "Tomcat02-JVM OOM", "Tomcat01-JVM OOM", "MG02-CPU攀升", "Mysql01-网络隔离", "Tomcat02-网络延迟", "Tomcat03-磁盘IO过高"]
+
     i = 0
     print(trace_baseline_path)
     for ad_ts in ad_ts_list:

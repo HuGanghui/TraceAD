@@ -42,10 +42,10 @@ class TraceSimpleDetection:
         prev_ts = ts - 300
         curr_ts = ts
         next_ts = ts + 300
-        # if prev_ts in self.timestamp2traces:
-        #     for ele in self.timestamp2traces[prev_ts]:
-        #         self.duration_detect(ele[0], ele[1])
-        if curr_ts in self.timestamp2traces:
+        if prev_ts in list(self.timestamp2traces.keys()):
+            for ele in self.timestamp2traces[prev_ts]:
+                self.duration_detect(ele[0], ele[1])
+        if curr_ts in list(self.timestamp2traces.keys()):
             for ele in self.timestamp2traces[curr_ts]:
                 self.duration_detect(ele[0], ele[1])
         # if next_ts in self.timestamp2traces:
