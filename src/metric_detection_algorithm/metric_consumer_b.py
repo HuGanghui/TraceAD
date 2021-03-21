@@ -14,7 +14,7 @@ from copy import copy
 from kafka import KafkaConsumer
 import requests
 
-from detection import MetricSimpleDetection
+from metric_detection_algorithm.detection import MetricSimpleDetection
 
 logging.basicConfig(level=logging.INFO)
 consumer_logger = logging.getLogger("consumer")

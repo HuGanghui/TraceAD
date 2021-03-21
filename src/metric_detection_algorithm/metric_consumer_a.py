@@ -16,7 +16,7 @@ from copy import copy
 from kafka import KafkaConsumer
 import requests
 
-from detection.metric_simple_detection import MetricSimpleDetection
+from metric_detection_algorithm.detection.metric_simple_detection import MetricSimpleDetection
 
 system = "a"
 
